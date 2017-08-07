@@ -1,0 +1,15 @@
+<ul class="nav navbar-nav">
+<li uib-dropdown ng-repeat="menu in mods" >
+<a ng-if="!menu.childs" ng-href="#{{menu.u}}">
+{{menu.n}}
+</a>
+<a ng-if="menu.childs" id="{{menu.id}}" uib-dropdown-toggle>
+{{menu.n}}<b class="caret"></b>
+</a>
+<ul ng-if="menu.childs" class="dropdown-menu" uib-dropdown-menu aria-labelledby="{{menu.id}}">
+<li ng-repeat="submenu in menu.childs" uib-dropdown>
+<a ng-href="#{{submenu.u}}">{{submenu.n}}</a>
+</li>
+</ul>
+</li>
+</ul>

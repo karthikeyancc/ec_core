@@ -1,0 +1,86 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.jbeglobal</groupId>
+  <artifactId>ec_core</artifactId>
+  <version>2.3</version>
+  <dependencies>
+ 
+<dependency>
+	<groupId>org.apache.tomcat</groupId>
+	<artifactId>tomcat-servlet-api</artifactId>
+	<version>8.0.33</version>
+    <scope>provided</scope>
+</dependency>
+<dependency>
+	<groupId>org.json</groupId>
+	<artifactId>json</artifactId>
+	<version>20090211</version>
+</dependency>
+        <!--dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1.1</version>
+		</dependency-->
+
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.11.0</version>
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5</version>
+        </dependency>
+<dependency>
+    <groupId>com.amazonaws</groupId>
+    <artifactId>aws-java-sdk-ses</artifactId>
+    <version>1.11.143</version>
+</dependency>
+
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <!-- forceJavacCompilerUse>true</forceJavacCompilerUse-->
+          <source>1.7</source>
+          <target>1.7</target>
+          <resources>
+	        <resource>
+	            <directory>src/main/java</directory>
+	            <includes>
+	                <include>**/*.*</include>
+	            </includes>
+	        	</resource>
+			</resources>
+        </configuration>
+      </plugin>
+      <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>2.4</version>
+            <configuration>
+			<resources>
+                <resource>
+	            <directory>src/main/resources</directory>
+	            <includes>
+	                <include>META-INF/web-fragment.xml</include>
+	            </includes>
+	        	</resource>
+			</resources>
+            </configuration>
+        </plugin>
+    </plugins>
+  </build>
+</project>
