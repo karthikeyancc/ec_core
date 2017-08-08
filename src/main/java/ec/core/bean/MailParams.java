@@ -49,7 +49,7 @@ public class MailParams {
             @XmlElement(name = "SelectQuery"))
     private List<SelectQuery> gridQueries = new ArrayList<SelectQuery>();
     @XmlAttribute
-    private String propertyFile;
+    private String propertyFile="WEB-INF/classes/mail.properties";
 
     public String getFormat() {
         return format;

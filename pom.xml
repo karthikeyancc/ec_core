@@ -1,9 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.jbeglobal</groupId>
+  <groupId>com.github.karthikeyancc</groupId>
   <artifactId>ec_core</artifactId>
   <version>2.3</version>
+  
+  <name>ec_core</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <github.maven.repository>file:${project.basedir}/../maven_repo/</github.maven.repository>
+</properties>
+
   <dependencies>
  
 <dependency>
@@ -17,7 +26,7 @@
 	<artifactId>json</artifactId>
 	<version>20090211</version>
 </dependency>
-        <!--dependency>
+        <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
             <version>1.4</version>
@@ -26,7 +35,7 @@
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
             <version>1.1.1</version>
-		</dependency-->
+		</dependency>
 
 		<dependency>
 			<groupId>xerces</groupId>
@@ -39,12 +48,6 @@
             <artifactId>httpclient</artifactId>
             <version>4.5</version>
         </dependency>
-<dependency>
-    <groupId>com.amazonaws</groupId>
-    <artifactId>aws-java-sdk-ses</artifactId>
-    <version>1.11.143</version>
-</dependency>
-
   </dependencies>
   <build>
     <plugins>
@@ -83,4 +86,10 @@
         </plugin>
     </plugins>
   </build>
+<distributionManagement>
+  	<repository>
+  		<id>maven_repo</id>
+  		<url>${github.maven.repository}</url>
+  	</repository>
+</distributionManagement>
 </project>

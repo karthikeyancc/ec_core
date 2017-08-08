@@ -25,29 +25,29 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-// import javax.mail.Message;
-// import javax.mail.MessagingException;
-// import javax.mail.PasswordAuthentication;
-// import javax.mail.Session;
-// import javax.mail.Transport;
-// import javax.mail.internet.InternetAddress;
-// import javax.mail.internet.MimeMessage;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
-import com.amazonaws.services.simpleemail.model.Body;
-import com.amazonaws.services.simpleemail.model.Content;
-import com.amazonaws.services.simpleemail.model.Destination;
-import com.amazonaws.services.simpleemail.model.Message;
-import com.amazonaws.services.simpleemail.model.SendEmailRequest;
-import com.amazonaws.auth.BasicAWSCredentials; 
+// import com.amazonaws.AmazonClientException;
+// import com.amazonaws.auth.AWSCredentials;
+// import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+// import com.amazonaws.regions.Region;
+// import com.amazonaws.regions.Regions;
+// import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+// import com.amazonaws.services.simpleemail.model.Body;
+// import com.amazonaws.services.simpleemail.model.Content;
+// import com.amazonaws.services.simpleemail.model.Destination;
+// import com.amazonaws.services.simpleemail.model.Message;
+// import com.amazonaws.services.simpleemail.model.SendEmailRequest;
+// import com.amazonaws.auth.BasicAWSCredentials; 
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -59,8 +59,8 @@ public class MailUtil {
     private Properties mailProps;
     private MailParams ins;
     private Executor exec;
-    private static final Logger LOG = Logger.getLogger(MailUtil.class.getName());
-    private static AmazonSimpleEmailServiceClient client;
+    private static final Logger LOG = Logger.getLogger(MailUtil.class.getName());        
+    /*private static AmazonSimpleEmailServiceClient client;
     static{
         try {
             client = new AmazonSimpleEmailServiceClient(new ProfileCredentialsProvider().getCredentials());
@@ -69,7 +69,7 @@ public class MailUtil {
         } catch (Exception ex) {
              LOG.log(Level.SEVERE,"aws ses email client instatiation issue",ex);
        }
-    }
+    }*/
     private MailUtil(){    
     }
     public MailUtil(Executor e, MailParams m) throws IOException {
@@ -154,7 +154,7 @@ public class MailUtil {
         }
     }
 
-        private void sendMail(final MailParams props) throws ECException{
+/*        private void sendMail(final MailParams props) throws ECException{
         
         LOG.log(Level.FINEST, " props b4 send = " + props.toString());
 
@@ -176,25 +176,24 @@ public class MailUtil {
         } catch (Exception ex) {
              throw new ECException(ex);
        }
-    }
-
+    }*/
     
-/*    private void sendMail(final Properties props) throws ECException {
+    private void sendMail(final MailParams props) throws ECException {
         try {
-            / * Session session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
+             Session session = Session.getDefaultInstance(mailProps, new javax.mail.Authenticator() {
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(props.getProperty("mail.user"), props.getProperty("mail.pwd"));
+                    return new PasswordAuthentication(mailProps.getProperty("mail.user"), mailProps.getProperty("mail.pwd"));
                 }
-            }); * /
-            Session session = Session.getDefaultInstance(props);
+            }); 
+//            Session session = Session.getDefaultInstance(mailProps);
 
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(props.getProperty("mail.from")));
+            message.setFrom(new InternetAddress(mailProps.getProperty("mail.user")));
             message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(props.getProperty("mail.to")));
-            message.setSubject(props.getProperty("mail.subject"));
-            message.setContent(props.getProperty("mail.message"), props.getProperty("mail.format"));
-            message.addHeader("Reply-to", props.getProperty("mail.from"));
+                    InternetAddress.parse(props.getTo()));
+            message.setSubject(props.getSubject());
+            message.setContent(props.getMessage(), props.getFormat());
+            message.addHeader("Reply-to", props.getFrom());
             Transport.send(message);
 
             System.out.println("Done");
@@ -203,7 +202,7 @@ public class MailUtil {
             throw new ECException(e);
         }
 
-    }*/
+    }
 
     private void addRequestProps(JSONObject obj, Map map) throws JSONException {
         HttpServletRequest request = (HttpServletRequest) map.get(ECServerUtil.REQ);

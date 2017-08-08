@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:webfragment="http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-fragment_3_1.xsd" id="WebFragment_ID" version="3.1">
+  <display-name>ec_core</display-name>
+  <name>ec_core</name>
+  
+  <servlet>
+    <servlet-name>writeServlet</servlet-name>
+    <servlet-class>ec.core.servlet.WriteServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>writeServlet</servlet-name>
+    <url-pattern>/w</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>readServlet</servlet-name>
+    <servlet-class>ec.core.servlet.ReadServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>readServlet</servlet-name>
+    <url-pattern>/r</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>writeUServlet</servlet-name>
+    <servlet-class>ec.core.servlet.WriteUServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>writeUServlet</servlet-name>
+    <url-pattern>/wu</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>readUServlet</servlet-name>
+    <servlet-class>ec.core.servlet.ReadUServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>readUServlet</servlet-name>
+    <url-pattern>/ru</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>roleFileServlet</servlet-name>
+    <servlet-class>ec.core.servlet.RoleFileServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>roleFileServlet</servlet-name>
+    <url-pattern>/roleFiles/*</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>searchServlet</servlet-name>
+    <servlet-class>ec.core.servlet.SearchServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>searchServlet</servlet-name>
+    <url-pattern>/s</url-pattern>
+  </servlet-mapping>
+
+<servlet>
+    <servlet-name>ResUpload</servlet-name>
+    <servlet-class>ec.core.servlet.WriteServlet</servlet-class>
+    <multipart-config>
+        <max-file-size>10485760</max-file-size>
+        <max-request-size>20971520</max-request-size>
+        <file-size-threshold>5242880</file-size-threshold>
+    </multipart-config>
+</servlet>
+<servlet-mapping>
+    <servlet-name>ResUpload</servlet-name>
+    <url-pattern>/u</url-pattern>
+</servlet-mapping>	
+<servlet>
+    <servlet-name>ResDownload</servlet-name>
+    <servlet-class>ec.core.servlet.WriteServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>ResDownload</servlet-name>
+    <url-pattern>/d</url-pattern>
+</servlet-mapping>	
+        	
+<filter>
+    <filter-name>ECFilter</filter-name>
+    <filter-class>ec.core.servlet.ECFilter</filter-class>
+  </filter>
+   <filter-mapping>
+    <filter-name>ECFilter</filter-name>
+    <url-pattern>/s</url-pattern>
+    <url-pattern>/u</url-pattern>
+    <url-pattern>/d</url-pattern>
+    <url-pattern>/w</url-pattern>
+    <url-pattern>/r</url-pattern>
+    <url-pattern>/wu</url-pattern>
+    <url-pattern>/ru</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+  </filter-mapping>
+</web-fragment>
