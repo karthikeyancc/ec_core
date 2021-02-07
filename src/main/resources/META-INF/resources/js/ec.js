@@ -243,6 +243,32 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
             ecHttp.fetchOptimalArray("r",angular.merge({},qp1,{"qu":qu1}),0,500,user,initfunc);
 
         };
+        $scope.addOk=function (retbean){
+        	ecHttp.writeObject("w",angular.merge({id:$scope.ecgrid.addedit.addTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.addSuccessMessage);},function(){alert($scope.ecgrid.addedit.addErrorMessage);});
+        };
+        $scope.addRecord=function(){
+        	var inputbean={};
+        	inputbean[$scope.ecgrid.addedit.beanName]={};
+        	ecHttp.showConfirmDialog(inputbean,$scope.ecgrid.addedit.addDialogCaption,null,$scope.ecgrid.addedit.addFieldsTemplate,$scope.addOk,'Add','Cancel',$scope.ecgrid.addedit.beanName);
+        };
+        $scope.editOk=function (retbean){
+        	ecHttp.writeObject("w",angular.merge({id:$scope.ecgrid.addedit.editTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.editSuccessMessage);},function(){alert($scope.ecgrid.addedit.editErrorMessage);});
+        };
+        $scope.editRecord=function(idfield){
+        	var row=$scope.gridApi.selection.getSelectedRows();
+        	if(row.length<1){
+        		alert('Please select a record');
+        		return ;
+        	}
+        	var sendbean = {};
+        	sendbean[idfield]=row[0][idfield];
+        	ecHttp.initbean(sendbean,$scope.ecgrid.addedit.recordDataQuery,sendbean,"r",function(bean){
+        		var editinput={};
+        		editinput[$scope.ecgrid.addedit.beanName]=bean;
+        		ecHttp.showConfirmDialog(editinput,$scope.ecgrid.addedit.editDialogCaption+" - "+bean[idfield],null,$scope.ecgrid.addedit.editFieldsTemplate,$scope.editOk,'Edit','Cancel',$scope.ecgrid.addedit.beanName);
+        	});
+        };
+
 }]).controller('gridmenuctrl', ['$scope', '$controller','ec.http','uiGridConstants', '$location',function ($scope, $controller,ecHttp,uiGridConstants,$location) {
         angular.extend(this, $controller('gridctrl', {$scope: $scope}));
         angular.extend($scope.ecgrid,{
@@ -413,7 +439,7 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
             document.getElementById('send').disabled=false;
         }
         if(fuser){
-            fuser()(data);
+            fuser(data);
         }else{
             fdefault(data);
         }
