@@ -1,4 +1,4 @@
-var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessages',  'ui.grid', 'ui.grid.selection', 'ui.grid.exporter','ui.grid.pinning', 'ui.grid.pagination',  'ui.grid.cellNav','ec.http','ui.bootstrap']);
+var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessages',  'ui.grid', 'ui.grid.selection', 'ui.grid.exporter','ui.grid.pinning', 'ui.grid.pagination',  'ui.grid.cellNav','ec.http','ui.grid.edit', 'ui.grid.rowEdit', 'ui.grid.cellNav','ui.bootstrap']);
 	app.config(
             function ($routeProvider) {
                 $routeProvider. when('/home', { templateUrl: 'roleFiles/html/home.html'
@@ -244,14 +244,28 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
 
         };
         $scope.addOk=function (retbean){
+        	ecHttp.gridsData($scope.ecgrid.addedit.grids,retbean);
         	ecHttp.writeObject("w",angular.merge({id:$scope.ecgrid.addedit.addTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.addSuccessMessage);},function(){alert($scope.ecgrid.addedit.addErrorMessage);});
         };
         $scope.addRecord=function(){
         	var inputbean={};
-        	inputbean[$scope.ecgrid.addedit.beanName]={};
+        	if($scope.ecgrid.addedit.beanName){
+	        	inputbean[$scope.ecgrid.addedit.beanName]={};
+	        }
         	ecHttp.showConfirmDialog(inputbean,$scope.ecgrid.addedit.addDialogCaption,null,$scope.ecgrid.addedit.addFieldsTemplate,$scope.addOk,'Add','Cancel',$scope.ecgrid.addedit.beanName);
         };
+    	$scope.addRow=function(index){
+    		$scope.ecgrid.data.splice(index+1,0,{});
+
+    	};
+    	$scope.deleteRow=function(index){
+    		$scope.ecgrid.data.splice(index,1);
+    		if($scope.ecgrid.data.length===0){
+    			$scope.ecgrid.data.push({});
+    		}
+    	};
         $scope.editOk=function (retbean){
+        	ecHttp.gridsData($scope.ecgrid.addedit.grids,retbean);
         	ecHttp.writeObject("w",angular.merge({id:$scope.ecgrid.addedit.editTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.editSuccessMessage);},function(){alert($scope.ecgrid.addedit.editErrorMessage);});
         };
         $scope.editRecord=function(idfield){
@@ -264,8 +278,10 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
         	sendbean[idfield]=row[0][idfield];
         	ecHttp.initbean(sendbean,$scope.ecgrid.addedit.recordDataQuery,sendbean,"r",function(bean){
         		var editinput={};
-        		editinput[$scope.ecgrid.addedit.beanName]=bean;
-        		ecHttp.showConfirmDialog(editinput,$scope.ecgrid.addedit.editDialogCaption+" - "+bean[idfield],null,$scope.ecgrid.addedit.editFieldsTemplate,$scope.editOk,'Edit','Cancel',$scope.ecgrid.addedit.beanName);
+        		if($scope.ecgrid.addedit.beanName){
+        			editinput[$scope.ecgrid.addedit.beanName]=bean;
+        		}
+        		ecHttp.showConfirmDialog(editinput,$scope.ecgrid.addedit.editDialogCaption+" - "+bean[idfield],null,$scope.ecgrid.addedit.editFieldsTemplate,$scope.editOk,'Update','Cancel',$scope.ecgrid.addedit.beanName);
         	});
         };
 
@@ -389,7 +405,7 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
         }
         for (var i=0; i<rl; i++){
             myvar.push(ret[i]);
-        }                    
+        }
         if(ret.length==limit){
             fac.fetchOptimalArray(url,p,start+limit,limit,myvar,cbfunc);
         }else if(cbfunc!=null){
@@ -528,52 +544,62 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
 		},
 		getArray:function(url,p,myvar)
 		{
-			$http.get(url,{params:p}).success(
+			$http({method: 'GET',url:url,params:p}).then(
 				function(resp){
 					myvar.length=0;
-					angular.extend(myvar,resp);
+					angular.extend(myvar,resp.data);
 				}
-			);
+			,function(error){
+				console.log(error);
+			});
 		},
 		getOptimalArray:function(url,p,myvar,cbfunc)
 		{
-			$http.get(url,{params:p}).success(
+			$http({method: 'GET',url:url,params:p}).then(
 				function(servdata){
-                                    var ret=decodeOptimalData(servdata);
+                                    var ret=decodeOptimalData(servdata.data);
 					myvar.length=0; 
                                         angular.extend(myvar,ret);
                                         if(cbfunc!=null){
-                                            cbfunc(ret,servdata.colnames,servdata.type);
+                                            cbfunc(ret,ret.colnames,ret.type);
                                         }
 				}
-			);
+				,function(error){
+					console.log(error);
+				});
 		},
 		fetchOptimalArray:function(url,p,start,limit,myvar,cbfunc)
 		{
             p['start']=start;
             p['limit']=limit;
-            $http.get(url,{params:p}).success(
+            $http({method: 'GET',url:url,params:p}).then(
                 function(servdata){
-                    processOptimalArray(servdata,url,p,start,limit,myvar,cbfunc);
+                    processOptimalArray(servdata.data,url,p,start,limit,myvar,cbfunc);
                 }
-            );
+                ,function(error){
+    				console.log(error);
+    			});
 		},
 		getObject:function(url,p,myvar)
 		{
-			$http.get(url,{params:p}).success(
+			$http({method: 'GET',url:url,params:p}).then(
 				function(servdata){
 					for (var key in myvar){delete myvar[key];}
-					angular.merge(myvar,servdata);
+					angular.merge(myvar,servdata.data);
 				}
-			);
+				,function(error){
+					console.log(error);
+				});
 		},
 		appendObject:function(url,p,myvar)
 		{
-			$http.get(url,{params:p}).success(
+			$http({method: 'GET',url:url,params:p}).then(
 				function(servdata){
-					angular.merge(myvar,servdata);
+					angular.merge(myvar,servdata.data);
 				}
-			);
+				,function(error){
+					console.log(error);
+				});
 		},uploadFiles:function(u,d,sfunc,efunc)
 		{ 
                             var payload = new FormData();
@@ -589,15 +615,15 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
         },initbean:function(bean,qu,par,url,cbfunc){
             var sendparam={};
 			sendparam=angular.merge(sendparam,$location.search(),par,{"qu": qu});
-            $http.get(url?url:"r", {params: sendparam}).success(
+            $http({method: 'GET', url:url?url:"r", params: sendparam}).then(
                     function (servdata) {
                         var i = 0;
-                        if(!servdata||!servdata.colnames){
+                        if(!servdata||!servdata.data||!servdata.data.colnames){
                                 return ;
                         }                        
-                        servdata.colnames.forEach(function (cn) {
-                            var dv = servdata.data[0][i];
-                            if(servdata.type[i].toUpperCase().startsWith("DATE")){
+                        servdata.data.colnames.forEach(function (cn) {
+                            var dv = servdata.data.data[0][i];
+                            if(servdata.data.type[i].toUpperCase().startsWith("DATE")){
                                 try{
                                     if(dv){
 //                                     var ds=dv.split('-');
@@ -620,7 +646,9 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                         if(cbfunc!=null){
                             cbfunc(bean);
                         }
-                    })
+                    },function(error){
+                    	console.log(error);
+                	});
         },reRouteFromGrid:function(gridApi,fn,field,params){
             if(gridApi&&gridApi.selection){
                 var row=gridApi.selection.getSelectedRows();
@@ -641,6 +669,48 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                 alert('Please select a row');
             }
         
+        },gridsData:function(grids,sendata){
+            if(grids){
+                var gl=grids.length;
+                for(var ggl=0;ggl<gl;ggl++){
+                    var grid=grids[ggl];
+                    var gridscope=angular.element(document.querySelector('#'+grid)).scope();
+                    var excludes=gridscope[grid].excludeProperties;
+                    var gdata=gridscope[grid].data;
+                    if(gridscope[grid].enableRowSelection&& gridscope.gridApi){
+                            if(gridscope.gridApi.selection){
+                                gdata=gridscope.gridApi.selection.getSelectedRows();
+                                if(gdata.length<1&&gridscope[grid].checkSelected){
+                                    alert('Please select a row');
+                                    return false;
+                                }
+                            }else if(gridscope[grid].checkSelected){
+                                alert('Please select a row');
+                                return false;
+                            }
+                        }
+                        sendata[grid+'_length']=gdata.length;
+                    gdata.forEach(function(rd){
+                        var row=angular.copy(rd);
+                        excludes.forEach(function(exc){
+                            delete row[exc];
+                        });
+                        for (c in row){
+                            if(row.hasOwnProperty(c)){
+                                var col=row[c];
+                                var sd=sendata[c];
+                                if(!sd){
+                                    sd=[];
+                                    sendata[c]=sd;
+                                }
+                                sd.push(col);
+                            }
+                        }
+                    });
+                    
+                };
+            }
+            return sendata;
         }
 	};
     return fac;
@@ -711,53 +781,13 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                             return false;
                             }
               try{
-				var sendata={};
+            	var sendata={}
                 if(scope.beans){
                     scope.beans.forEach(function(bean){
                         angular.merge(sendata,scope.$parent[bean]);
                     });
                 }
-                if(scope.grids){
-                    var gl=scope.grids.length;
-                    for(var ggl=0;ggl<gl;ggl++){
-                        var grid=scope.grids[ggl];
-                        var gridscope=angular.element(document.querySelector('#'+grid)).scope();
-                        var excludes=gridscope[grid].excludeProperties;
-                        var gdata=gridscope[grid].data;
-                        if(gridscope[grid].enableRowSelection&& gridscope.gridApi){
-                                if(gridscope.gridApi.selection){
-                                    gdata=gridscope.gridApi.selection.getSelectedRows();
-                                    if(gdata.length<1&&gridscope[grid].checkSelected){
-                                        alert('Please select a row');
-                                        return false;
-                                    }
-                                }else if(gridscope[grid].checkSelected){
-                                    alert('Please select a row');
-                                    return false;
-                                }
-                            }
-                            sendata[grid+'_length']=gdata.length;
-                        gdata.forEach(function(rd){
-                            var row=angular.copy(rd);
-                            excludes.forEach(function(exc){
-                                delete row[exc];
-                            });
-                            for (c in row){
-                                if(row.hasOwnProperty(c)){
-                                    var col=row[c];
-                                    var sd=sendata[c];
-                                    if(!sd){
-                                        sd=[];
-                                        sendata[c]=sd;
-                                    }
-                                    sd.push(col);
-                                }
-                            }
-                        });
-                        
-                    };
-                }
-
+            	ecHttp.gridsData(scope.grids,sendata);
                 var u="w";
                 if(scope.url){
                     u=scope.url;
@@ -793,17 +823,32 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
 		restrict : 'E',
 		scope : {
 			grid : "@",
-                        qu : "@",
-                        limit:"@?"
+            qu : "@",
+            limit:"@?",
+            params : "@?",
+            addEmptyRow : "@?"                
 		},
 		link: function(scope) {
                     var pa=$location.search();
                     pa['qu']=scope.qu;
+                    if(scope.params){
+                    	pa = angular.extend({},pa,JSON.parse(scope.params));
+                    }
                     if(scope.grid){
+                    	var gridscope=angular.element(document.querySelector('#'+scope.grid)).scope();
+                    	var cbfunc=undefined;
+                    	if(scope.addEmptyRow){
+                    		cbfunc=function(){
+                    			if(gridscope[scope.grid].data.length===0){
+                    				gridscope[scope.grid].data.push({});
+                    			}
+                    		}
+                    	}
                         if(scope.limit){
-                                ecHttp.fetchOptimalArray("r",pa,0,parseInt(scope.limit),scope.$parent[scope.grid].data);
+                        	
+                                ecHttp.fetchOptimalArray("r",pa,0,parseInt(scope.limit),gridscope[scope.grid].data,cbfunc);
                         }else{
-                                ecHttp.getOptimalArray("r",pa,scope.$parent[scope.grid].data);
+                                ecHttp.getOptimalArray("r",pa,gridscope[scope.grid].data,cbfunc);
                         }
                     }
                 }
@@ -836,10 +881,10 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
             if(scope.ecoptquery){
                 pa['qu']=scope.ecoptquery;
             }
-            $http.get(scope.ecopturl?scope.ecopturl:"r",{params:pa}).success(
+            $http({method: 'GET',url:scope.ecopturl?scope.ecopturl:"r",params:pa}).then(
                             function(data){
                                 scope.$parent[scope.ecoptlist]=[];
-                                data.data.forEach(function(obj){
+                                data.data.data.forEach(function(obj){
                                     var t=Object.prototype.toString.call(obj) ;
                                     if(t =='[object Object]'){
                                         for(var v in obj){
@@ -852,7 +897,9 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                                     }
                                 });
                             }
-                        );
+                            ,function(error){
+                				console.log(error);
+                			});
         }
 	};
     }]).directive('ecopts',function(){
