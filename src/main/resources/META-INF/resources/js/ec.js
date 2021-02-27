@@ -31,6 +31,7 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
         ecHttp.getObject('ru',{"qu":"whoami","limit":"1"},$scope.user);
     }]).controller('ecctrl', ['$scope', 'ec.http', '$location', function ($scope, ecHttp, $location) {
         $scope.queryParams=$location.search();
+    	angular.element(document.getElementById('pagetitle')).text($scope.title);
     }]).controller('lovctrl', ['$scope', 'ec.http', '$location','$timeout' ,function ($scope, ecHttp, $location,$timeout) {
         $scope.queryParams=$location.search();
         var qu="companycid",qup={},fieldname='ID,Name',fieldsize='50,150';
@@ -190,8 +191,8 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
             enableFiltering: true,
             enableSorting: true,
             enableColumnHide: false,
-            exporterPdfOrientation: 'portrait',
-            exporterPdfPageSize: 'A0',
+            exporterPdfOrientation: 'landscape',
+            exporterPdfPageSize: 'A4',
             gridMenuShowHideColumns: false,
             paginationPageSize: 250,
             enableColumnMenus:false,
@@ -245,7 +246,7 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
         };
         $scope.addOk=function (retbean){
         	ecHttp.gridsData($scope.ecgrid.addedit.grids,retbean);
-        	ecHttp.writeObject("w",angular.merge({id:$scope.ecgrid.addedit.addTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.addSuccessMessage);},function(){alert($scope.ecgrid.addedit.addErrorMessage);});
+        	ecHttp.writeObject("w",angular.merge({task:$scope.ecgrid.addedit.addTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.addSuccessMessage);},function(){alert($scope.ecgrid.addedit.addErrorMessage);});
         };
         $scope.addRecord=function(){
         	var inputbean={};
@@ -266,7 +267,7 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
     	};
         $scope.editOk=function (retbean){
         	ecHttp.gridsData($scope.ecgrid.addedit.grids,retbean);
-        	ecHttp.writeObject("w",angular.merge({id:$scope.ecgrid.addedit.editTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.editSuccessMessage);},function(){alert($scope.ecgrid.addedit.editErrorMessage);});
+        	ecHttp.writeObject("w",angular.merge({task:$scope.ecgrid.addedit.editTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.editSuccessMessage);},function(){alert($scope.ecgrid.addedit.editErrorMessage);});
         };
         $scope.editRecord=function(idfield){
         	var row=$scope.gridApi.selection.getSelectedRows();
@@ -276,6 +277,7 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
         	}
         	var sendbean = {};
         	sendbean[idfield]=row[0][idfield];
+        	console.log(sendbean);
         	ecHttp.initbean(sendbean,$scope.ecgrid.addedit.recordDataQuery,sendbean,"r",function(bean){
         		var editinput={};
         		if($scope.ecgrid.addedit.beanName){
@@ -523,8 +525,10 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                     }
                 }
                 return ret;
-        },
-        formatDate:function(d){
+        },get:function(u,pa){
+            pa['t']=Date.now();
+          return $http({method: 'GET',url:u?u:"r",params:pa});  
+        },formatDate:function(d){
                 if(d){
                       var y=d.getFullYear();
                       var m=d.getMonth()+1;
@@ -544,18 +548,17 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
 		},
 		getArray:function(url,p,myvar)
 		{
-			$http({method: 'GET',url:url,params:p}).then(
+			this.get(url,p).then(
 				function(resp){
 					myvar.length=0;
 					angular.extend(myvar,resp.data);
 				}
-			,function(error){
-				console.log(error);
-			});
-		},
-		getOptimalArray:function(url,p,myvar,cbfunc)
+			,this.errorfunc);
+		},errorfunc:function(error){
+			console.log(error);
+		},getOptimalArray:function(url,p,myvar,cbfunc)
 		{
-			$http({method: 'GET',url:url,params:p}).then(
+			this.get(url,p).then(
 				function(servdata){
                                     var ret=decodeOptimalData(servdata.data);
 					myvar.length=0; 
@@ -563,43 +566,31 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                                         if(cbfunc!=null){
                                             cbfunc(ret,ret.colnames,ret.type);
                                         }
-				}
-				,function(error){
-					console.log(error);
-				});
+				},this.errorfunc);
 		},
 		fetchOptimalArray:function(url,p,start,limit,myvar,cbfunc)
 		{
             p['start']=start;
             p['limit']=limit;
-            $http({method: 'GET',url:url,params:p}).then(
+            this.get(url,p).then(
                 function(servdata){
                     processOptimalArray(servdata.data,url,p,start,limit,myvar,cbfunc);
-                }
-                ,function(error){
-    				console.log(error);
-    			});
+                },this.errorfunc);
 		},
 		getObject:function(url,p,myvar)
 		{
-			$http({method: 'GET',url:url,params:p}).then(
+			this.get(url,p).then(
 				function(servdata){
 					for (var key in myvar){delete myvar[key];}
 					angular.merge(myvar,servdata.data);
-				}
-				,function(error){
-					console.log(error);
-				});
+				},this.errorfunc);
 		},
 		appendObject:function(url,p,myvar)
 		{
-			$http({method: 'GET',url:url,params:p}).then(
+			this.get(url,p).then(
 				function(servdata){
 					angular.merge(myvar,servdata.data);
-				}
-				,function(error){
-					console.log(error);
-				});
+				},this.errorfunc);
 		},uploadFiles:function(u,d,sfunc,efunc)
 		{ 
                             var payload = new FormData();
@@ -615,7 +606,7 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
         },initbean:function(bean,qu,par,url,cbfunc){
             var sendparam={};
 			sendparam=angular.merge(sendparam,$location.search(),par,{"qu": qu});
-            $http({method: 'GET', url:url?url:"r", params: sendparam}).then(
+            	this.get(url?url:"r",sendparam).then(
                     function (servdata) {
                         var i = 0;
                         if(!servdata||!servdata.data||!servdata.data.colnames){
@@ -646,9 +637,22 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                         if(cbfunc!=null){
                             cbfunc(bean);
                         }
-                    },function(error){
-                    	console.log(error);
-                	});
+                    },this.errorfunc);
+        },readDataToSelect:function(u,p,list){
+        	this.get(u,p).then(function(data){
+            data.data.data.forEach(function(obj){
+                var t=Object.prototype.toString.call(obj) ;
+                if(t =='[object Object]'){
+                    for(var v in obj){
+                        list.push({"val":v,"disp":obj[v]});
+                    }
+                }else if (t =='[object Array]'){
+                    list.push({"val":obj[0],"disp":obj[1]});
+                }else if (t ==='[object String]'){
+                        list.push({"val":obj,"disp":obj});
+                }
+            });
+        	},this.errorfunc);	
         },reRouteFromGrid:function(gridApi,fn,field,params){
             if(gridApi&&gridApi.selection){
                 var row=gridApi.selection.getSelectedRows();
@@ -723,7 +727,7 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
 			grids : "=?",
 			formid : "@?",
 			caption : "@",
-            id: "@",
+            task: "@",
 			mode :"@",
             url:"@?",
                         checkfunc:"&?",
@@ -794,7 +798,7 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                 }
                               event.target.disabled=true;
 
-				ecHttp.writeObject(u,angular.merge({id:scope.id,mode:scope.mode,data:sendata},$routeParams),scope.successfunc,scope.errorfunc);
+				ecHttp.writeObject(u,angular.merge({task:scope.task,mode:scope.mode,data:sendata},$routeParams),scope.successfunc,scope.errorfunc);
             }catch(e){
                 event.target.disabled=false;
             }  
@@ -881,25 +885,8 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
             if(scope.ecoptquery){
                 pa['qu']=scope.ecoptquery;
             }
-            $http({method: 'GET',url:scope.ecopturl?scope.ecopturl:"r",params:pa}).then(
-                            function(data){
-                                scope.$parent[scope.ecoptlist]=[];
-                                data.data.data.forEach(function(obj){
-                                    var t=Object.prototype.toString.call(obj) ;
-                                    if(t =='[object Object]'){
-                                        for(var v in obj){
-                                            scope.$parent[scope.ecoptlist].push({"val":v,"disp":obj[v]});
-                                        }
-                                    }else if (t =='[object Array]'){
-                                        scope.$parent[scope.ecoptlist].push({"val":obj[0],"disp":obj[1]});
-                                    }else if (t ==='[object String]'){
-                                            scope.$parent[scope.ecoptlist].push({"val":obj,"disp":obj});
-                                    }
-                                });
-                            }
-                            ,function(error){
-                				console.log(error);
-                			});
+            scope.$parent[scope.ecoptlist]=[];
+            ecHttp.readDataToSelect(scope.ecopturl?scope.ecopturl:"r",pa,scope.$parent[scope.ecoptlist]);
         }
 	};
     }]).directive('ecopts',function(){

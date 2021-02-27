@@ -70,7 +70,7 @@ public class WriteServlet extends HttpServlet {
         String ecuser=(String)request.getAttribute(ECServerUtil.USER);
         System.out.println("ecuser = "+ecuser);
 		Executor execu=new Executor();
-        String taskId=request.getParameter("id");
+        String taskId=request.getParameter("task");
         String data=request.getParameter("data");
         HashMap<String,Object> map=new HashMap();
         map.put(ECServerUtil.DS,dataSource);
