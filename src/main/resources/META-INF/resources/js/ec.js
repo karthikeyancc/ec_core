@@ -31,7 +31,8 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
         ecHttp.getObject('ru',{"qu":"whoami","limit":"1"},$scope.user);
     }]).controller('ecctrl', ['$scope', 'ec.http', '$location', function ($scope, ecHttp, $location) {
         $scope.queryParams=$location.search();
-    	angular.element(document.getElementById('pagetitle')).text($scope.title);
+        $scope.title='Home';
+        $scope.$on('$routeChangeSuccess', ecHttp.setTitle($scope));
     }]).controller('lovctrl', ['$scope', 'ec.http', '$location','$timeout' ,function ($scope, ecHttp, $location,$timeout) {
         $scope.queryParams=$location.search();
         var qu="companycid",qup={},fieldname='ID,Name',fieldsize='50,150';
@@ -187,6 +188,7 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
                     }, function(){}).finally(function(){conf=undefined});
 		};
  }]).controller('gridctrl', ['$scope', 'uiGridConstants', 'ec.http',function ($scope,uiGridConstants,ecHttp) {
+     $scope.$on('$routeChangeSuccess', ecHttp.setTitle($scope));
         $scope.ecgrid={
             enableFiltering: true,
             enableSorting: true,
@@ -244,6 +246,9 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
             ecHttp.fetchOptimalArray("r",angular.merge({},qp1,{"qu":qu1}),0,500,user,initfunc);
 
         };
+        $scope.toggleFilter=function(gridname){
+        	$scope[gridname].enableFiltering=!$scope[gridname].enableFiltering;
+        };
         $scope.addOk=function (retbean){
         	ecHttp.gridsData($scope.ecgrid.addedit.grids,retbean);
         	ecHttp.writeObject("w",angular.merge({task:$scope.ecgrid.addedit.addTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.addSuccessMessage);},function(){alert($scope.ecgrid.addedit.addErrorMessage);});
@@ -277,7 +282,6 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
         	}
         	var sendbean = {};
         	sendbean[idfield]=row[0][idfield];
-        	console.log(sendbean);
         	ecHttp.initbean(sendbean,$scope.ecgrid.addedit.recordDataQuery,sendbean,"r",function(bean){
         		var editinput={};
         		if($scope.ecgrid.addedit.beanName){
@@ -288,6 +292,7 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
         };
 
 }]).controller('gridmenuctrl', ['$scope', '$controller','ec.http','uiGridConstants', '$location',function ($scope, $controller,ecHttp,uiGridConstants,$location) {
+    $scope.$on('$routeChangeSuccess', ecHttp.setTitle($scope));
         angular.extend(this, $controller('gridctrl', {$scope: $scope}));
         angular.extend($scope.ecgrid,{
             enableGridMenu: true,
@@ -525,6 +530,12 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                     }
                 }
                 return ret;
+        },setTitle:function(scope){
+            angular.element(document.getElementById('pagetitle')).text(scope.title);
+        },decideTitle:function(screen,location,scope,idf){
+        	var ids=idf?idf:'id';
+        	var id = location.search()[ids];
+            scope.title=screen+(id?' - '+id+' - Edit': ' New');
         },get:function(u,pa){
             pa['t']=Date.now();
           return $http({method: 'GET',url:u?u:"r",params:pa});  
