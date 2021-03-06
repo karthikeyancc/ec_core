@@ -190,7 +190,7 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
  }]).controller('gridctrl', ['$scope', 'uiGridConstants', 'ec.http',function ($scope,uiGridConstants,ecHttp) {
      $scope.$on('$routeChangeSuccess', ecHttp.setTitle($scope));
         $scope.ecgrid={
-            enableFiltering: true,
+            enableFiltering: false,
             enableSorting: true,
             enableColumnHide: false,
             exporterPdfOrientation: 'landscape',
@@ -198,10 +198,11 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
             gridMenuShowHideColumns: false,
             paginationPageSize: 250,
             enableColumnMenus:false,
-            onRegisterApi:function (gridApi) { $scope.gridApi = gridApi; $scope.initFilters(this.columnDefs)},
+            onRegisterApi:function (gridApi) { $scope.gridApi = gridApi; $scope.gridApi.enableFiltering=false;$scope.initFilters(this.columnDefs)},
             data: []
         };
         $scope.initFilters=function(defs){
+        	var t=0;
             defs.forEach(function(f) {
                 if(f.type=='number' ){
                     f. filters= [ { condition: uiGridConstants.filter.GREATER_THAN, placeholder: 'From' },
@@ -213,42 +214,32 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
                         }
                     };
                 }
+                f.headerCellClass= $scope.highlightFilteredHeader;
+                if(t==0){
+                	f.term='1';
+                	t++;
+                }
             });
         };
-        
-        $scope.matchTables=function(qu1,qp1,qu2,qp2,finalvar,filters){
-                var user=[];
-                var vacancy=[];
-                filterfunc=function(d,n,t){
-                    vacancy=d;
-                    var ul=user.length;
-                    var vl=vacancy.length;
-                    vnames=n;
-                    finalvar.length=0;
-                    var u=0,v=0,s=true;
-                    for(u=0;u<ul;u++){
-                        for(v=0;v<vl;v++){
-                            s=true;
-                            for (f in filters){
-                                if(s){
-                                    s=ecHttp.searchCellValue(user[u][f],vacancy[v][filters[f]]);
-                                }
-                            }
-                            if(s){
-                                finalvar.push(angular.merge({},user[u],vacancy[v]));
-                            }
-                        }
-                    }
-                };
-                var initfunc=function(d,n,t){
-                    ecHttp.fetchOptimalArray("r",angular.merge({},qp2,{"qu":qu2}),0,500,vacancy,filterfunc);
-                }
-            ecHttp.fetchOptimalArray("r",angular.merge({},qp1,{"qu":qu1}),0,500,user,initfunc);
-
-        };
+        $scope.highlightFilteredHeader=function( row, rowRenderIndex, col, colRenderIndex ) {
+            if( col.filters[0].term ){
+                return 'header-filtered';
+              } else {
+                return '';
+              }
+            };
         $scope.toggleFilter=function(gridname){
-        	$scope[gridname].enableFiltering=!$scope[gridname].enableFiltering;
+        	var en=$scope[gridname].enableFiltering;
+        	if(en){
+        		$scope[gridname].enableFiltering=false;
+        	}else{
+        		$scope[gridname].enableFiltering=true;
+        	}
+            $scope.gridApi.core.notifyDataChange( uiGridConstants.dataChange.COLUMN );        	
+            $scope.gridApi.core.refreshRows();        	
         };
+        
+        
         $scope.addOk=function (retbean){
         	ecHttp.gridsData($scope.ecgrid.addedit.grids,retbean);
         	ecHttp.writeObject("w",angular.merge({task:$scope.ecgrid.addedit.addTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.addSuccessMessage);},function(){alert($scope.ecgrid.addedit.addErrorMessage);});
