@@ -198,6 +198,7 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
             gridMenuShowHideColumns: false,
             paginationPageSize: 250,
             enableColumnMenus:false,
+            minRowsToShow : 20,
             onRegisterApi:function (gridApi) { $scope.gridApi = gridApi; $scope.gridApi.enableFiltering=false;$scope.initFilters(this.columnDefs)},
             data: []
         };
