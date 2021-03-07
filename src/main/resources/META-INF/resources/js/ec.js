@@ -814,14 +814,19 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
 			bean : "@",
 			qu : "@",
             url:"@?",
-            params : "@?"
+            params : "@?",
+            callback : "@?"
 		},
 		link: function(scope) {
             if(!scope.$parent[scope.bean]){
                 scope.$parent[scope.bean]={};
             }
             var p=scope.params?JSON.parse(scope.params):{};
-            ecHttp.initbean(scope.$parent[scope.bean],scope.qu,p,scope.url);
+            var cbfunc;
+            if(scope.callback && scope.$parent[scope.callback]){
+            	cbfunc=scope.$parent[scope.callback];
+            }
+            ecHttp.initbean(scope.$parent[scope.bean],scope.qu,p,scope.url,cbfunc);
         }
 	};
 }]).directive('initGrid',['ec.http','$location',function(ecHttp,$location){
