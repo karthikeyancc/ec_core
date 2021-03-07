@@ -33,6 +33,7 @@ public class Instruction {
     @XmlAttribute
     private CallType opConditionType = CallType.SQL;
 
+    @XmlAttribute
     private String opCondition;
     @XmlAttribute
     private boolean quitOnInvalidCondition;
