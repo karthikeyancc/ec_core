@@ -243,7 +243,7 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
         
         $scope.addOk=function (retbean){
         	ecHttp.gridsData($scope.ecgrid.addedit.grids,retbean);
-        	ecHttp.writeObject("w",angular.merge({task:$scope.ecgrid.addedit.addTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.addSuccessMessage);},function(){alert($scope.ecgrid.addedit.addErrorMessage);});
+        	ecHttp.writeObject("w",angular.merge({task:$scope.ecgrid.addedit.addTaskid,mode:"1",data:retbean}),null,null);
         };
         $scope.addRecord=function(){
         	var inputbean={};
@@ -264,7 +264,7 @@ var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessage
     	};
         $scope.editOk=function (retbean){
         	ecHttp.gridsData($scope.ecgrid.addedit.grids,retbean);
-        	ecHttp.writeObject("w",angular.merge({task:$scope.ecgrid.addedit.editTaskid,mode:"1",data:retbean}),function(){alert($scope.ecgrid.addedit.editSuccessMessage);},function(){alert($scope.ecgrid.addedit.editErrorMessage);});
+        	ecHttp.writeObject("w",angular.merge({task:$scope.ecgrid.addedit.editTaskid,mode:"1",data:retbean}),null,null);
         };
         $scope.editRecord=function(idfield){
         	var row=$scope.gridApi.selection.getSelectedRows();
@@ -434,7 +434,7 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                     }else if(resp.data.forwardURL!=$location.path()){
                         $location.path(resp.data.forwardURL);
                     }else{
-                        $route.reload();
+                    	$window.location.reload();
                     }
                 }
         }else{
@@ -848,13 +848,10 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
                     }
                     if(scope.grid){
                     	var gridscope=angular.element(document.querySelector('#'+scope.grid)).scope();
-                    	var cbfunc=undefined;
-                    	if(scope.addEmptyRow){
-                    		cbfunc=function(){
-                    			if(gridscope[scope.grid].data.length===0){
-                    				gridscope[scope.grid].data.push({});
-                    			}
-                    		}
+                    	var cbfunc=function(){
+                			if(scope.addEmptyRow && gridscope[scope.grid].data.length===0){
+                				gridscope[scope.grid].data.push({});
+                			}
                     	}
                         if(scope.limit){
                         	
