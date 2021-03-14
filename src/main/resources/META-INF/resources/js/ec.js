@@ -1,6 +1,7 @@
-var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessages',  'ui.grid', 'ui.grid.selection', 'ui.grid.exporter','ui.grid.pinning', 'ui.grid.pagination',  'ui.grid.cellNav','ec.http','ui.grid.edit', 'ui.grid.rowEdit', 'ui.grid.cellNav','ui.bootstrap']);
+var app = angular.module("app", ['ngRoute', 'ngAnimate', 'ngMaterial','ngMessages',  'ui.grid', 'ui.grid.selection', 'ui.grid.exporter','ui.grid.pinning', 'ui.grid.pagination',  'ui.grid.cellNav','ec.http','ui.grid.edit', 'ui.grid.rowEdit', 'ui.grid.cellNav']);
 	app.config(
-            function ($routeProvider) {
+            function ($routeProvider,$locationProvider) {
+            	$locationProvider.hashPrefix('');
                 $routeProvider. when('/home', { templateUrl: 'roleFiles/html/home.html'
                 }).when('/:page', {
                     templateUrl: function(routeParams){
@@ -531,6 +532,19 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
         },get:function(u,pa){
             pa['t']=Date.now();
           return $http({method: 'GET',url:u?u:"r",params:pa});  
+        },html2pdf:function(elementId,fName){
+        	html2canvas(document.getElementById(elementId), {
+                onrendered: function (canvas) {
+                    var data = canvas.toDataURL();
+                    var docDefinition = {
+                        content: [{
+                            image: data,
+                            width: 500,
+                        }]
+                    };
+                    pdfMake.createPdf(docDefinition).download(fName);
+                }
+            });
         },formatDate:function(d){
                 if(d){
                       var y=d.getFullYear();
@@ -721,25 +735,39 @@ ecHttp.factory('ec.http', ['$http','$httpParamSerializer','$route','$routeParams
         }
 	};
     return fac;
-}]).directive('submitPane',['ec.http','$mdDialog','$routeParams','$log',function(ecHttp,$mdDialog,$routeParams,$log){
+}]).directive('htmlToPdf',['ec.http',function(ecHttp){
 	return {
-		template: '<button class="btn btn-primary" id="send">{{caption}}</button>',
+		template: '<button class="btn btn-primary" id="createpdf">Create Pdf</button>',
 		restrict : 'E',
 		scope : {
-			beans : "=?",
-			grids : "=?",
-			formid : "@?",
-			caption : "@",
-            task: "@",
-			mode :"@",
-            url:"@?",
-                        checkfunc:"&?",
-                        successfunc:"&?",
-                        errorfunc:"&?"
+			ref : "@",
+			filename : "@"
 		},
 		link: function(scope, element,controller,attributes) {
-                    	element.bind('click', function(event) {
-                            
+        	element.bind('click', function(event) {
+        		ecHttp.html2pdf(scope.ref,scope.filename);
+        	});
+		}
+	}
+}]).directive('submitPane',['ec.http','$mdDialog','$routeParams','$log',function(ecHttp,$mdDialog,$routeParams,$log){
+                    		return {
+                    			template: '<button class="btn btn-primary" id="send">{{caption}}</button>',
+                    			restrict : 'E',
+                    			scope : {
+                    				beans : "=?",
+                    				grids : "=?",
+                    				formid : "@?",
+                    				caption : "@",
+                    				task: "@",
+                    				mode :"@",
+                    				url:"@?",
+                    				checkfunc:"&?",
+                    				successfunc:"&?",
+                    				errorfunc:"&?"
+                    			},
+                    			link: function(scope, element,controller,attributes) {
+                    				element.bind('click', function(event) {
+                    					
                             var proceed=true;               
                             if(scope.checkfunc!=null){
                                 var res=scope.checkfunc();
